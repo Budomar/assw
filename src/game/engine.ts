@@ -45,9 +45,10 @@ export class GameEngine {
       { x: 9, y: 10 },
       { x: 8, y: 10 },
     ];
+    const initialFood = this.spawnFoodStandalone('normal', snake, [], []);
     return {
       snake,
-      food: [this.spawnFood('normal', snake)],
+      food: [initialFood],
       walls: [],
       particles: [],
       floatingTexts: [],
@@ -90,11 +91,11 @@ export class GameEngine {
     }
   }
 
-  private spawnFood(type: FoodType, snake: Position[]): Food {
+  private spawnFoodStandalone(type: FoodType, snake: Position[], existingFood: Food[], walls: Wall[]): Food {
     let pos: Position;
     const occupied = new Set(snake.map(s => `${s.x},${s.y}`));
-    this.state.food.forEach(f => occupied.add(`${f.pos.x},${f.pos.y}`));
-    this.state.walls.forEach(w => occupied.add(`${w.x},${w.y}`));
+    existingFood.forEach(f => occupied.add(`${f.pos.x},${f.pos.y}`));
+    walls.forEach(w => occupied.add(`${w.x},${w.y}`));
 
     let attempts = 0;
     do {
@@ -114,6 +115,10 @@ export class GameEngine {
     };
 
     return { pos, type, spawnTime: performance.now(), duration: durations[type] };
+  }
+
+  private spawnFood(type: FoodType, snake: Position[]): Food {
+    return this.spawnFoodStandalone(type, snake, this.state.food, this.state.walls);
   }
 
   private getRandomFoodType(): FoodType {
